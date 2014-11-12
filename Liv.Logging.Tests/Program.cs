@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Windows.Forms;
 
-namespace Liv.Log.Tests
+namespace Liv.Logging.Tests
 {
 	static class Program
 	{

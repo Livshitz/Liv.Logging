@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Liv.Log", "Liv.Log\Liv.Log.csproj", "{88A3C3FD-02BE-4C86-9077-DEF8AED9B431}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Liv.Logging", "Liv.Logging\Liv.Logging.csproj", "{88A3C3FD-02BE-4C86-9077-DEF8AED9B431}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Liv.Log.Tests", "Liv.Log.Tests\Liv.Log.Tests.csproj", "{E12DDAE2-1C9A-47D0-8513-198151FAFAD7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Liv.Logging.Tests", "Liv.Logging.Tests\Liv.Logging.Tests.csproj", "{E12DDAE2-1C9A-47D0-8513-198151FAFAD7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,4 +1,4 @@
-﻿namespace Liv.Log.Tests
+﻿namespace Liv.Logging.Tests
 {
 	partial class Form1
 	{
@@ -28,7 +28,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-			this.logDisplayer1 = new Liv.Log.LogDisplayer();
+			this.logDisplayer1 = new Liv.Logging.LogDisplayer();
 			this.SuspendLayout();
 			// 
 			// logDisplayer1

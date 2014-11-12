@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
+using Liv;
 
-namespace Liv.Log.Tests
+namespace Liv.Logging.Tests
 {
 	public partial class Form1 : Form
 	{
@@ -43,7 +39,7 @@ namespace Liv.Log.Tests
 
 			// Set write log into file
 			Log.SetWriteToFile("myLog.log");
-
+			
 			Log.Info("Hello there!");
 			Log.Verbose("This is verbose, and look at this {0} & fast way to write to log", "awsome");
 			Log.SetLogLevel(Log.TraceLevel.Info);
