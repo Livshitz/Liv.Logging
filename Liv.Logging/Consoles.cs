@@ -36,6 +36,7 @@ namespace Liv.Logging
 				Encoding encoding = System.Text.Encoding.GetEncoding(MY_CODE_PAGE);
 				StreamWriter standardOutput = new StreamWriter(fileStream, encoding);
 				standardOutput.AutoFlush = true;
+
 				Console.SetOut(standardOutput);
 			}
 			else

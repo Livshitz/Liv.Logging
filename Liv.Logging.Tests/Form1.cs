@@ -38,7 +38,7 @@ namespace Liv.Logging.Tests
 			*/
 
 			// Set write log into file
-			Log.SetWriteToFile("myLog.log");
+			Log.SetWriteToFile(@".\log\myLog.log", Log.TraceLevel.Debug, true);
 			
 			Log.Info("Hello there!");
 			Log.Verbose("This is verbose, and look at this {0} & fast way to write to log", "awsome");
@@ -47,6 +47,12 @@ namespace Liv.Logging.Tests
 			Log.SetLogLevel(Log.TraceLevel.Debug);
 			Log.Debug(Compunentes.CompenentA, "This is debug message for CompenentA");
 			Log.TraceEntity(new MyCustomClass() { Title = "This is the title", Number = 5 });
+			Log.Error("This is error!");
+
+			Log.Info("INFO: ".Yellow() + "Hello".Red() + ", " + "World.".Blue());
+			Log.Info("This is zebra".Zebra());
+			Log.Info("This is rainbow".Rainbow());
+
 			#endregion
 		}
 	}

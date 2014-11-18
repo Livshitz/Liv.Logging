@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using System.Reflection;
 using System.Configuration;
+using System.Text.RegularExpressions;
 using System.Xml;
 
 namespace Liv.Logging
@@ -14,7 +15,9 @@ namespace Liv.Logging
         private static readonly object _Lock = new object();
         public static bool IsDebugMode = false;
         public static bool IsShowAt = false;
-        public static bool IsAddDate = false;
+		public static bool IsAddDate = false;
+		public static bool IsThreadId = false;
+		public static bool UseColors = true;
 
         // Summary:
         //     Specifies what messages to output for the System.Diagnostics.Debug, System.Diagnostics.Trace
@@ -270,19 +273,19 @@ namespace Liv.Logging
             switch (traceLevel)
             {
                 case Log.TraceLevel.Verbose:
-                    _Prefix = "-";
+					_Prefix = (UseColors) ? "-".Grey() : "-";
                     break;
                 case Log.TraceLevel.Info:
-                    _Prefix = ">";
+                    _Prefix = (UseColors) ? ">".Green() : ">";
                     break;
                 case Log.TraceLevel.Debug:
-                    _Prefix = "D";
+                    _Prefix = (UseColors) ? "D".Blue() : "D";
                     break;
                 case Log.TraceLevel.Warning:
-                    _Prefix = "*";
+                    _Prefix = (UseColors) ? "*".Yellow() : "*";
                     break;
                 case Log.TraceLevel.Error:
-                    _Prefix = "!";
+					_Prefix = (UseColors) ? "!".Red() : "!";
                     break;
             }
 
@@ -290,10 +293,14 @@ namespace Liv.Logging
             {
                 ret = string.Format("{1}|{2}[{0}] {3}", _Prefix, DateTime.Now.ToString("dd/MM/yy|HH:mm:ss.fff"), AppDomain.GetCurrentThreadId(), msg);
             }
-            else
-            {
-                ret = string.Format("{1}[{0}] {2}", _Prefix, AppDomain.GetCurrentThreadId(), msg);
-            }
+			else if (IsThreadId)
+			{
+				ret = string.Format("{1}[{0}] {2}", _Prefix, AppDomain.GetCurrentThreadId(), msg);
+			}
+			else
+			{
+				ret = string.Format("[{0}] {1}", _Prefix, msg);
+			}
 
             if (IsShowAt && traceLevel != Log.TraceLevel.Error)
             {
@@ -332,13 +339,12 @@ namespace Liv.Logging
             return ret;
         }
 
-        public static void SetConsoleTracing(bool isAddDate = true)
+        public static void SetConsoleTracing(bool isAddDate = false)
         {
             try
             {
                 IsAddDate = isAddDate;
                 Consoles.ShowConsole();
-                Console.WriteLine("");
                 Console.WriteLine("--------------------");
                 Console.WriteLine("Console was alocated");
             }
@@ -346,7 +352,8 @@ namespace Liv.Logging
             {
                 Console.WriteLine("SetConsoleTracing: Error:" + ex.Message);
             }
-            var ctl = new ConsoleTraceListener();
+			var ctl = new TextWriterTraceListener(new EscapeSequencer(Console.Out));
+			//var ctl = new ConsoleTraceListener();
             ctl.Filter = new EventTypeFilter(SourceLevels.Verbose);
 
             Trace.Listeners.Add(ctl);
@@ -361,109 +368,31 @@ namespace Liv.Logging
             Trace.WriteLine(text);
         }
 
-        public static void SetWriteToFile(string logFilePath, TraceLevel traceLevel = TraceLevel.Verbose)
+        public static void SetWriteToFile(string logFilePath, TraceLevel traceLevel = TraceLevel.Verbose, bool isCreateUniqueTrace = false)
         {
-            var ctl = new TextWriterTraceListener(logFilePath);
+	        if (isCreateUniqueTrace)
+	        {
+		        logFilePath = Path.GetDirectoryName(logFilePath) + "\\" + Path.GetFileNameWithoutExtension(logFilePath) + 
+							  "_" + Guid.NewGuid() + Path.GetExtension(logFilePath);
+	        }
+
+	        if (!File.Exists(logFilePath))
+	        {
+		        Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
+	        }
+
+            var ctl = new CustomTraceListener(logFilePath, !IsAddDate);
             ctl.Filter = new EventTypeFilter(SourceLevels.Verbose);
             Trace.Listeners.Add(ctl);
             Trace.AutoFlush = true;
             SetLogLevel(traceLevel);
             Log.Verbose("Log:SetWriteToFile: Setting log file: {0}", logFilePath);
         }
-    }
 
-    /// <summary>
-    /// This class is mechanism for collecting and recording the messages that are sent,
-    /// For debug Goal.    
-    /// The purpose of a listener is to collect, store, and route those messages.
-    /// Listeners direct the tracing output to an appropriate target,
-    /// That declares in the *.config xml-file under the sub node - "initializeData".
-    /// This class is the TextWriterTraceListener listener type. 
-    /// </summary>
-    public class CustomTraceListener : TextWriterTraceListener
-    {
-        public CustomTraceListener(string aFileName)
-            : base(ModifyFileName(aFileName))
-        {
-
-        }
-
-        private static string ModifyFileName(string aRelativePath)
-        {
-            // Map the relative path given in the web.cofig (you cant by default).
-            return aRelativePath.Replace("~", System.AppDomain.CurrentDomain.BaseDirectory);
-        }
-
-        public override void WriteLine(string message)
-        {
-            WriteLine(message, Log.TraceLevel.Verbose.ToString());
-        }
-
-        public override void WriteLine(string message, string amyTraceLevel)
-        {
-            string _Prefix = "";
-
-            Log.TraceLevel traceLevel = (Log.TraceLevel)Enum.Parse(typeof(Log.TraceLevel), amyTraceLevel);
-
-            switch (traceLevel)
-            {
-                case Log.TraceLevel.Verbose:
-                    _Prefix = "-";
-                    break;
-                case Log.TraceLevel.Info:
-                    _Prefix = ">";
-                    break;
-                case Log.TraceLevel.Debug:
-                    _Prefix = "D";
-                    break;
-                case Log.TraceLevel.Warning:
-                    _Prefix = "*";
-                    break;
-                case Log.TraceLevel.Error:
-                    _Prefix = "!";
-                    break;
-            }
-
-            if (Writer == null) return;
-
-            Writer.Write("{1}[{2}]-[{0}]", _Prefix, DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss.fff"), AppDomain.GetCurrentThreadId());
-            base.Write(message);
-
-            if (traceLevel != Log.TraceLevel.Error)
-            {
-                Writer.Write(" (at:{0})", GetCallingMethod());
-            }
-
-            base.WriteLine("");
-        }
-
-        private string GetCallingMethod()
-        {
-            string ret = "";
-
-            try
-            {
-                StackTrace stackTrace = new StackTrace(true);
-                StackFrame stackFrame = stackTrace.GetFrame(8);
-                System.Reflection.MethodBase methodBase = stackFrame.GetMethod();
-
-                string _FilePath = stackFrame.GetFileName();
-                if (!String.IsNullOrEmpty(_FilePath))
-                {
-                    _FilePath = _FilePath.ToLower();
-                    //_FilePath = _FilePath.Replace(Feedox.Common.SharedScope.Instance.ServerRootPath.ToLower(), "");
-                    if (_FilePath[0] == '\\') _FilePath = _FilePath.Remove(0, 1);
-                    _FilePath = "-" + _FilePath;
-                }
-                else
-                {
-                    _FilePath = "";
-                }
-
-                ret = methodBase.Name + _FilePath;
-            }
-            catch { }
-            return ret;
-        }
+	    public static string UnescapeColors(string input)
+	    {
+			if (!UseColors) return input;
+			return Regex.Replace(input, @"\x1b\[\d+m(.+?)\x1b\[\d+m", @"$1");
+	    }
     }
 }

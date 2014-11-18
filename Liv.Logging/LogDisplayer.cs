@@ -51,13 +51,15 @@ namespace Liv.Logging
             public override void Write(string message)
             {
                 if (!_target.IsHandleCreated) return;
+				message = Log.UnescapeColors(message);
                 _target.Invoke(_invokeWrite, new object[] { message });
             }
 
             public override void WriteLine(string message)
             {
                 if (!_target.IsHandleCreated) return;
-                _target.Invoke(_invokeWrite, new object[] { message + System.Environment.NewLine });
+				message = Log.UnescapeColors(message);
+				_target.Invoke(_invokeWrite, new object[] { message + System.Environment.NewLine });
             }
 
             private delegate void StringSendDelegate(string message);
